@@ -3,7 +3,7 @@
  * @Autor: Gary
  * @Date: 2023-05-16 14:47:56
  * @LastEditors: Gary
- * @LastEditTime: 2023-05-19 16:55:25
+ * @LastEditTime: 2023-05-23 17:43:04
 -->
 <template>
 	<div class="main-container">
@@ -250,12 +250,13 @@ export default {
 
 			loading: false,
 
-			openSetting: false,
+			openSetting: true,
 		};
 	},
 	mounted() {
 		const { setWatermark } = useWatermark(this.$refs.mywrap);
 		this.setWatermark = setWatermark;
+		this.initShow()
 		this.getConfigFromServer();
 	},
 	methods: {
@@ -276,28 +277,10 @@ export default {
 						this.settingParams = Object.assign(this.settingParams, res.data);
 					}
 					this.initShow();
-					this.getCurrentUser();
 				})
 				.catch((error) => {
 					this.loading = false;
 				});
-		},
-
-		/**
-		 * @description: 获取当前登录用户
-		 * @return {*}
-		 * @author: Gary
-		 */
-		getCurrentUser() {
-			this.openSetting = false;
-			this.getCurrentUserInfo().then((res) => {
-				if (res && res.groups) {
-					let sysUser = res.groups.find((group) => group.sysGroup === true);
-					if (sysUser) {
-						this.openSetting = true;
-					}
-				}
-			});
 		},
 
 		/**

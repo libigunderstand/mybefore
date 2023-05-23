@@ -3,7 +3,7 @@
  * @Autor: Gary
  * @Date: 2023-05-16 14:47:56
  * @LastEditors: Gary
- * @LastEditTime: 2023-05-18 10:11:38
+ * @LastEditTime: 2023-05-23 18:05:38
 -->
 <template>
 	<div id="app">
@@ -18,7 +18,9 @@ body {
 	padding: 0;
 	width: 100%;
 	height: 100%;
-	overflow-y: auto;
+	min-width: 1200px;
+	min-height: 800px;
+	overflow: auto;
 }
 #app {
 	font-family: Avenir, Helvetica, Arial, sans-serif;
