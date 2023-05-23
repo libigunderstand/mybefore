@@ -7,32 +7,32 @@
  */
 import Vue from "vue";
 import VueRouter from "vue-router";
+import { routes } from "@/router/routes";
 
 Vue.use(VueRouter);
 
-const routes = [
-	{
-		path: "/",
-		redirect: "/login"
-	},
-
-	{
-		path: "/",
-		name: "home",
-		component: () => import("@/views/HomeView"),
-	},
-
-	{
-		path: "/login",
-		name: "login",
-		component: () => import("@/views/login/UserLogin"),
-	},
-];
-
 const router = new VueRouter({
-	mode: "hash",
+	mode: "history",
 	base: process.env.BASE_URL,
 	routes,
+});
+
+router.beforeEach(async (to, from, next) => {
+	// 判断是否合法路由
+	let okPath = false;
+	for (let i in routes) {
+		if (routes[i]["path"] === to.path) {
+			okPath = true;
+			break;
+		}
+	}
+	if (okPath) {
+		// 如果合法则正常跳转
+		next();
+	} else {
+		// 不合法跳转到404页面
+		next({ path: "/404" });
+	}
 });
 
 export default router;

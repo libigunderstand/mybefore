@@ -10,7 +10,11 @@ module.exports = defineConfig({
 	publicPath: "/",
 	transpileDependencies: true,
 	devServer: {
-		port: 8080,
+		host: 'localhost',
+		port: 8082,
+		open: true,
+		hot: true,
+		liveReload: true,
 		proxy: {
 			"/myback": {
 				target: "http://localhost:9200/myback",

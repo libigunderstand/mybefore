@@ -16,9 +16,16 @@ export default {
 		});
 	},
 
-	getConfigFile: function (param) {
+	register: function (param) {
 		return new Promise(function (resolve, reject) {
-			let response = $http.get("/myback/config", param);
+			let response = $http.post("/myback/user/add", param);
+			resolve(response);
+		});
+	},
+
+	login: function (param) {
+		return new Promise(function (resolve, reject) {
+			let response = $http.post("/myback/user/login", param);
 			resolve(response);
 		});
 	},
