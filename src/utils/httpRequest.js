@@ -52,7 +52,9 @@ httpService.interceptors.response.use(
 				message: `${error.message}`,
 			});
 		}
-		return null;
+		return {
+			data: null,
+		};
 	}
 );
 

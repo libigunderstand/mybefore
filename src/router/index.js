@@ -3,11 +3,16 @@
  * @Autor: Gary
  * @Date: 2023-05-16 14:47:56
  * @LastEditors: Gary
- * @LastEditTime: 2023-05-17 10:18:03
+ * @LastEditTime: 2023-05-25 11:36:59
  */
 import Vue from "vue";
 import VueRouter from "vue-router";
 import { routes } from "@/router/routes";
+
+const originalPush = VueRouter.prototype.push;
+VueRouter.prototype.push = function push(location) {
+	return originalPush.call(this, location).catch((err) => err);
+};
 
 Vue.use(VueRouter);
 
@@ -27,8 +32,16 @@ router.beforeEach(async (to, from, next) => {
 		}
 	}
 	if (okPath) {
-		// 如果合法则正常跳转
-		next();
+		if (to.path == "/login") {
+			next();
+		} else {
+			const TOKEN = localStorage.getItem("token");
+			if (TOKEN) {
+				next();
+			} else {
+				next({ path: "/login" });
+			}
+		}
 	} else {
 		// 不合法跳转到404页面
 		next({ path: "/404" });
