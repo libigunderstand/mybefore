@@ -85,7 +85,7 @@ a:hover {
 
 #message.signed-up {
 	opacity: 1;
-	top: 200px;
+	top: 150px;
 	letter-spacing: 8px;
 	z-index: 11;
 	transition: all 2s 0.5s, opacity 1s 1.5s;

@@ -32,10 +32,17 @@ router.beforeEach(async (to, from, next) => {
 		}
 	}
 	if (okPath) {
+		const TOKEN = localStorage.getItem("token");
 		if (to.path == "/login") {
-			next();
+			if (TOKEN) {
+				next({
+					path: "/",
+					replace: true,
+				});
+			} else {
+				next();
+			}
 		} else {
-			const TOKEN = localStorage.getItem("token");
 			if (TOKEN) {
 				next();
 			} else {
