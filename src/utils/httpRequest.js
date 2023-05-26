@@ -1,6 +1,7 @@
 // 导入axios
 import axios from "axios";
 import ElementUI from "element-ui";
+import router from "@/router/index";
 const httpService = axios.create({
 	baseURL: "",
 	// timeout: 5000,
@@ -34,6 +35,12 @@ httpService.interceptors.response.use(
 	(error) => {
 		console.log(error);
 		if (error && error.response) {
+			if (error.request.status == 401) {
+				localStorage.removeItem("token");
+				router.replace({
+					path: "/login",
+				});
+			}
 			ElementUI.Message({
 				dangerouslyUseHTMLString: true,
 				duration: 3000,

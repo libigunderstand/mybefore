@@ -3,7 +3,7 @@
  * @Autor: Gary
  * @Date: 2023-05-08 16:34:51
  * @LastEditors: Gary
- * @LastEditTime: 2023-05-18 10:39:04
+ * @LastEditTime: 2023-05-26 17:33:20
  */
 const domSymbol = Symbol("watermark-dom");
 const body = document.body;
@@ -40,9 +40,9 @@ export function useWatermark(appendEl = body) {
 		let can = document.createElement("canvas");
 
 		// 根据间距和数量设置画布大小
-		can.width = (width / xNum).toFixed(0);
+		can.width = ((width - lGap - rGap) / xNum).toFixed(0);
 
-		can.height = (height / yNum).toFixed(0);
+		can.height = ((height - tGap - bGap) / yNum).toFixed(0);
 
 		let cans = can.getContext("2d");
 
