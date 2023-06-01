@@ -51,13 +51,33 @@
 								placeholder="请输入密码"
 							></el-input>
 						</el-form-item>
-						<div class="spacer"></div>
+						<div class="ver-wrap">
+							<HmVerification
+								:show="isShow"
+								@success="verSuccess"
+								:sliderSize="30"
+							></HmVerification>
+							<div
+								class="control-btn"
+								@click="openVerification"
+								v-show="!checkedSuccess"
+							>
+								<img src="@/assets/safe.svg" alt="" />
+								<span>点击进行验证</span>
+							</div>
+							<div class="control-btn ver-success" v-show="checkedSuccess">
+								<img src="@/assets/safe.svg" alt="" />
+								<span>验证成功</span>
+							</div>
+						</div>
 						<el-button
 							type="primary"
 							class="submit"
 							id="signed-in"
 							v-show="isLogin"
+							:loading="isLoading"
 							style="margin-left: 0"
+							:disabled="checkedSuccess ? false : true"
 							@click="submitForm(0)"
 							>登 录</el-button
 						>
@@ -67,6 +87,8 @@
 							id="signed-in"
 							style="margin-left: 0"
 							v-if="!isLogin"
+							:loading="isLoading"
+							:disabled="checkedSuccess ? false : true"
 							@click="submitForm(1)"
 							>注 册</el-button
 						>
@@ -80,6 +102,7 @@
 <script>
 import BackgroundCss from "./BackgroundCss.vue";
 import AESCrypt from "@/utils/AESCrypt";
+import HmVerification from "@/components/hmVerification/HmVerification.vue";
 import Api from "@/api";
 import $ from "jquery";
 var content = null,
@@ -90,6 +113,7 @@ var content = null,
 export default {
 	components: {
 		BackgroundCss,
+		HmVerification,
 	},
 	data() {
 		return {
@@ -146,6 +170,9 @@ export default {
 			},
 
 			isLogin: true,
+			isShow: false,
+			checkedSuccess: false,
+			isLoading: false,
 		};
 	},
 	mounted() {
@@ -155,7 +182,7 @@ export default {
 		signedIn = "signed-in";
 		signedUp = "signed-up";
 		document.addEventListener("keyup", (e) => {
-			if (e.keyCode === 13) {
+			if (e.keyCode === 13 && this.checkedSuccess) {
 				if (this.isLogin) {
 					this.submitForm(0);
 				} else {
@@ -194,27 +221,34 @@ export default {
 		 * @author: Gary
 		 */
 		loginService(typeId) {
+			this.isLoading = true;
 			let params = {
 				tickname: this.form.tickname,
 				password: AESCrypt.encrypt(this.form.password),
 			};
-			Api.user.login(params).then((res) => {
-				if (res.data && res.data.token) {
-					this.resetForm();
-					this.animateForm(typeId);
-					setTimeout(() => {
-						localStorage.setItem("token", res.data.token);
-						this.$router.replace({
-							path: "/home",
+			Api.user
+				.login(params)
+				.then((res) => {
+					this.isLoading = false;
+					if (res.data && res.data.token) {
+						this.resetForm();
+						this.animateForm(typeId);
+						setTimeout(() => {
+							localStorage.setItem("token", res.data.token);
+							this.$router.replace({
+								path: "/home",
+							});
+						}, 2500);
+					} else {
+						this.$notify.error({
+							title: "error",
+							message: res.msg || "登录失败",
 						});
-					}, 2500);
-				} else {
-					this.$notify.error({
-						title: "error",
-						message: res.msg || "登录失败",
-					});
-				}
-			});
+					}
+				})
+				.catch(() => {
+					this.isLoading = false;
+				});
 		},
 
 		/**
@@ -241,25 +275,32 @@ export default {
 		 * @author: Gary
 		 */
 		registerService(typeId) {
+			this.isLoading = true;
 			let params = {
 				tickname: this.form.tickname,
 				password: AESCrypt.encrypt(this.form.password),
 				username: this.form.username,
 			};
-			Api.user.register(params).then((res) => {
-				if (res.data) {
-					this.animateForm(typeId);
-					this.resetForm();
-					setTimeout(() => {
-						this.reset();
-					}, 2500);
-				} else {
-					this.$notify.error({
-						title: "error",
-						message: res.msg || "注册失败",
-					});
-				}
-			});
+			Api.user
+				.register(params)
+				.then((res) => {
+					this.isLoading = false;
+					if (res.data) {
+						this.animateForm(typeId);
+						this.resetForm();
+						setTimeout(() => {
+							this.reset();
+						}, 2500);
+					} else {
+						this.$notify.error({
+							title: "error",
+							message: res.msg || "注册失败",
+						});
+					}
+				})
+				.catch(() => {
+					this.isLoading = false;
+				});
 		},
 
 		/**
@@ -285,6 +326,25 @@ export default {
 			this.isLogin = true;
 			this.resetForm();
 		},
+
+		/**
+		 * @description: 开启人机校验
+		 * @return {*}
+		 * @author: Gary
+		 */
+		openVerification() {
+			this.isShow = true;
+		},
+
+		/**
+		 * @description: 校验成功
+		 * @return {*}
+		 * @author: Gary
+		 */
+		verSuccess() {
+			this.isShow = false;
+			this.checkedSuccess = true;
+		},
 	},
 };
 </script>
@@ -301,27 +361,52 @@ export default {
 }
 
 .el-button.submit {
-	font-size: 100%;
-	line-height: 16px;
-	display: block;
 	width: 100%;
 	height: 42px;
-	cursor: pointer;
-	vertical-align: middle;
-	letter-spacing: 2px;
-	text-transform: uppercase;
 	color: white;
 	border: 0 solid rgba(0, 0, 0, 0.8);
 	background: #17bebb;
 	margin-top: 0px;
 	box-shadow: 0 2px 0 #f5f5f5, 0 6px 0 #17bebb;
 	transition: all 0.4s;
-	&:hover {
+	&:not(.is-disabled):hover {
 		background: #26547c;
 		box-shadow: 0 2px 0 #f5f5f5, 0 6px 0 #26547c, 0 8px 0 #f5f5f5,
 			0 11px 0 #26547c;
 		margin-top: -2px;
 		transition: all 0.2s;
+	}
+}
+
+.ver-wrap {
+	padding: 15px 0;
+	.control-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		color: #f5f5f5;
+		font-size: 14px;
+		border-radius: 4px;
+		padding: 10px 0;
+		background: linear-gradient(
+			rgba(38, 84, 124, 0.3),
+			rgba(38, 84, 124, 0.8),
+			rgba(38, 84, 124, 0.3)
+		);
+
+		span {
+			text-indent: 20px;
+		}
+
+		&.ver-success {
+			cursor: default;
+			background: linear-gradient(
+				rgba(98, 210, 96, 0.4),
+				rgba(98, 210, 96, 0.8),
+				rgba(98, 210, 96, 0.4)
+			);
+		}
 	}
 }
 </style>
